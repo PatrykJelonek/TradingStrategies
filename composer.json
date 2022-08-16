@@ -4,8 +4,9 @@
     "autoload": {
         "psr-4": {
             "TradingStrategies\\": "src/",
-            "TradingStrategies\\Strategies\\Stuckey": "src/Strategies/Stuckey",
-            "TradingStrategies\\Strategies\\Seidenberg": "src/Strategies/Seidenberg",
+            "TradingStrategies\\Structures\\": "src/Structures",
+            "TradingStrategies\\Strategies\\Stuckey\\": "src/Strategies/Stuckey",
+            "TradingStrategies\\Strategies\\Seidenberg\\": "src/Strategies/Seidenberg",
         }
     },
     "minimum-stability": "dev",
