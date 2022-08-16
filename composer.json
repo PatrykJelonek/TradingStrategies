@@ -3,7 +3,9 @@
     "description": "Library containts Stuckey and Seidenberg trading strategies implementations.",
     "autoload": {
         "psr-4": {
-            "PatrykJelonek\\TradingStrategies\\": "src/"
+            "PatrykJelonek\\TradingStrategies\\": "src/",
+            "PatrykJelonek\\TradingStrategies\\Strategies\\Stuckey": "src/Strategies/Stuckey",
+            "PatrykJelonek\\TradingStrategies\\Strategies\\Seidenberg": "src/Strategies/Seidenberg",
         }
     },
     "minimum-stability": "dev",
