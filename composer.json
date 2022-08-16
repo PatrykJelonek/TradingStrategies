@@ -1,0 +1,11 @@
+{
+    "name": "PatrykJelonek/TradingStrategies",
+    "description": "Library containts Stuckey and Seidenberg trading strategies implementations.",
+    "autoload": {
+        "psr-4": {
+            "PatrykJelonek\\TradingStrategies\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
