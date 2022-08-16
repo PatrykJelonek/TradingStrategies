@@ -1,2 +1,2 @@
-# StuckeyTradingStrategy
-PHP library with Stuckey trading strategy implementation
+# TradingStrategies
+PHP library with Stuckey and Seidenberg trading strategies implementations
