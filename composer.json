@@ -1,5 +1,5 @@
 {
-    "name": "PatrykJelonek/TradingStrategies",
+    "name": "patrykjelonek/trading-strategies",
     "description": "Library containts Stuckey and Seidenberg trading strategies implementations.",
     "autoload": {
         "psr-4": {
@@ -7,8 +7,14 @@
             "TradingStrategies\\Structures\\": "src/Structures",
             "TradingStrategies\\Strategies\\Stuckey\\": "src/Strategies/Stuckey",
             "TradingStrategies\\Strategies\\Seidenberg\\": "src/Strategies/Seidenberg",
+            "TradingStrategies\\Tests\\": "tests/",
+            "TradingStrategies\\Tests\\Strategies\\Stuckey\\": "tests/Strategies/Stuckey",
+            "TradingStrategies\\Tests\\Strategies\\Seidenberg\\": "tests/Strategies/Seidenberg"
         }
     },
     "minimum-stability": "dev",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "require-dev": {
+        "phpunit/phpunit": "^9"
+    }
 }
