@@ -5,6 +5,7 @@ namespace TradingStrategies\Strategies\Stuckey;
 use JetBrains\PhpStorm\Pure;
 use TradingStrategies\Interfaces\TradingStrategy;
 use TradingStrategies\Strategies\StrategyException;
+use TradingStrategies\Structures\CalculationOutput;
 use TradingStrategies\Traits\ArrayMeanTrait;
 use TradingStrategies\Structures\Item;
 
@@ -63,7 +64,7 @@ class StuckeyStrategy implements TradingStrategy
         }
     }
 
-    public function calculatePivots(): void
+    public function calculatePivots(): CalculationOutput
     {
         if (empty($this->data)) {
             throw new StrategyException(
@@ -126,6 +127,8 @@ class StuckeyStrategy implements TradingStrategy
         }
 
         var_dump($this->shortPositionsSellStop);
+
+        return new CalculationOutput();
     }
 
     #[Pure] private function calculateHighLowDifference(Item $item): float
