@@ -1,8 +1,8 @@
 <?php
 
-namespace TraidingStrategies\Strategies\Seidenberg;
+namespace TradingStrategies\Strategies\Seidenberg;
 
 class SeidenbergStrategy
 {
-  // @todo Implement Seidenberg strategy
+    // @todo Implement Seidenberg strategy
 }

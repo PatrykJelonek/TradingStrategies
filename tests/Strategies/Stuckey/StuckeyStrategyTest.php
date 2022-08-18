@@ -1,6 +1,13 @@
 <?php
 
-class StuckeyStrategyTest
+namespace TradingStrategies\Tests\Strategies\Stuckey;
+
+use PHPUnit\Framework\TestCase;
+
+class StuckeyStrategyTest extends TestCase
 {
- // @todo implement StuckeyStrategy test 
+    public function testA(): void
+    {
+        $this->assertSame('A', 'A');
+    }
 }
