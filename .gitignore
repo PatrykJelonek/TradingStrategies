@@ -1,3 +1,4 @@
 .docker
 vendor
 ./src/index.php
+BASIC_COMMAND.md
