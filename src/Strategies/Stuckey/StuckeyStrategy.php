@@ -85,7 +85,7 @@ class StuckeyStrategy implements TradingStrategy
             $highLowDifferences[$iteration] = $this->calculateHighLowDifference($this->data[$iteration - 1]);
 
             if ($this->isCalculationBufferReached($iteration)) {
-                $meanHighLowDifferences[$iteration] = $this->getMeanHighLowDifference($highLowDifferences, $iteration);
+                $meanHighLowDifferences[$iteration] = $this->getMeanHighLowDifference($highLowDifferences);
 
                 $this->longPositionsSellStop[$iteration] = $this->getLongPositionSellStop(
                     $currentIterationItem,
@@ -126,8 +126,6 @@ class StuckeyStrategy implements TradingStrategy
             }
         }
 
-        var_dump($this->shortPositionsSellStop);
-
         return new CalculationOutput();
     }
 
@@ -141,9 +139,9 @@ class StuckeyStrategy implements TradingStrategy
         return $iteration > $this->iterationOffset + self::DEFAULT_CALCULATION_BUFFER;
     }
 
-    #[Pure] private function getMeanHighLowDifference(array $highLowDifferences, int $iteration): float
+    #[Pure] private function getMeanHighLowDifference(array $highLowDifferences): float
     {
-        return $this->arrayMean(array_slice($highLowDifferences, $iteration - 5, 5));
+        return $this->arrayMean(array_slice($highLowDifferences,  -5, 5));
     }
 
     #[Pure] private function getLongPositionSellStop(Item $item, float $highLowDifferenceMean): float

@@ -29,8 +29,8 @@ for i=beg:m(1)-1
     range(i)=C(i-1,3)-C(i-1,4);
     //%if i>beg+100
     Rang(i)=mean(range(i-5:i));
-    stop1(i)=C(i,2)+r*Rang(i);
 
+    stop1(i)=C(i,2)+r*Rang(i);
     if C(i,3)>stop1(i)
         ld=ld+1;
         zl(i)=C(i,5)-stop1(i)-spread;
@@ -39,6 +39,7 @@ for i=beg:m(1)-1
         zl(i)=-SL-spread;
         sl=sl+1;
     end
+
     stop2(i)=C(i,2)-r*Rang(i);
     if C(i,4)<stop2(i)
         ls=ls+1;
