@@ -6,7 +6,10 @@ use JetBrains\PhpStorm\Pure;
 use TradingStrategies\Interfaces\TradingStrategy;
 use TradingStrategies\Strategies\StrategyException;
 use TradingStrategies\Structures\CalculationOutput;
-use TradingStrategies\Traits\ArrayMeanTrait;
+use TradingStrategies\Structures\CalculationParams;
+use TradingStrategies\Structures\SumResultOutput;
+use TradingStrategies\Traits\CumulativeSumTrait;
+use TradingStrategies\Traits\MeanTrait;
 use TradingStrategies\Structures\Item;
 
 /**
@@ -14,10 +17,10 @@ use TradingStrategies\Structures\Item;
  */
 class StuckeyStrategy implements TradingStrategy
 {
-    use ArrayMeanTrait;
+    use MeanTrait, CumulativeSumTrait;
 
     private const DEFAULT_FACTOR = 0.5;
-    private const DEFAULT_ITERATION_OFFSET = 3900;
+    private const DEFAULT_ITERATION_OFFSET = 3899;
     private const DEFAULT_SPREAD = 1;
     private const DEFAULT_CALCULATION_BUFFER = 100;
 
@@ -58,15 +61,29 @@ class StuckeyStrategy implements TradingStrategy
     public function __invoke()
     {
         try {
-            $this->calculatePivots();
+            $calculationParams = new CalculationParams();
+            $calculationParams
+                ->setStockData($this->data)
+                ->setStockDataSize($this->dataSize)
+                ->setCalculationOffset(self::DEFAULT_ITERATION_OFFSET)
+                ->setCalculationBuffer(self::DEFAULT_CALCULATION_BUFFER)
+                ->setFactor(self::DEFAULT_FACTOR);
+
+            $calculationOutput = $this->calculatePivots($calculationParams);
+            $sumResult = $this->sumResult($calculationOutput);
+
+            dump($sumResult->getZsr());
         } catch (StrategyException $exception) {
             echo "[{$exception->getCode()}] - {$exception->getMessage()}";
         }
     }
 
-    public function calculatePivots(): CalculationOutput
+    public function calculatePivots(CalculationParams $params): CalculationOutput
     {
-        if (empty($this->data)) {
+        $data = $params->getStockData();
+        $output = new CalculationOutput();
+
+        if (empty($data)) {
             throw new StrategyException(
                 StrategyException::STRATEGY_EXCEPTION_MESSAGES[StrategyException::EMPTY_DATA_EXCEPTION],
                 StrategyException::EMPTY_DATA_EXCEPTION
@@ -76,13 +93,13 @@ class StuckeyStrategy implements TradingStrategy
         $highLowDifferences = [];
         $meanHighLowDifferences = [];
 
-        for ($iteration = $this->iterationOffset; $iteration < $this->dataSize; $iteration++) {
+        for ($iteration = $params->getCalculationOffset(); $iteration < $params->getStockDataSize(); $iteration++) {
             $this->numberOfIterations++;
             $this->zl[$iteration] = 0;
             $this->zs[$iteration] = 0;
-            $currentIterationItem = $this->data[$iteration];
+            $currentIterationItem = $data[$iteration];
 
-            $highLowDifferences[$iteration] = $this->calculateHighLowDifference($this->data[$iteration - 1]);
+            $highLowDifferences[$iteration] = $this->calculateHighLowDifference($data[$iteration - 1]);
 
             if ($this->isCalculationBufferReached($iteration)) {
                 $meanHighLowDifferences[$iteration] = $this->getMeanHighLowDifference($highLowDifferences);
@@ -126,7 +143,52 @@ class StuckeyStrategy implements TradingStrategy
             }
         }
 
-        return new CalculationOutput();
+        $output
+            ->setCalculationParams($params)
+            ->setNumberOfIteration($this->numberOfIterations)
+            ->setNumberOfLongPositions($this->numberOfLongPositions)
+            ->setNumberOfShortPositions($this->numberOfShortPositions)
+            ->setSl($this->sl)
+            ->setZl($this->zl)
+            ->setZs($this->zs);
+
+        return $output;
+    }
+
+    public function sumResult(CalculationOutput $calculationOutput): SumResultOutput
+    {
+        $sumResultOutput = new SumResultOutput();
+
+        $zsl = $this->cumulativeSum($calculationOutput->getZl());
+        $zss = $this->cumulativeSum($calculationOutput->getZs());
+
+        $zcum = array_merge($zsl, $zss);
+
+        if (end($zcum) > $calculationOutput->getCalculationParams()->getRec()) {
+            $calculationOutput->getCalculationParams()->setRec(end($zcum));
+
+            $sumResultOutput
+                ->setZr($zcum)
+                ->setZlr($zsl)
+                ->setZsr($zss)
+                ->setParopt(
+                    [
+                        $calculationOutput->getCalculationParams()->getFactor(),
+                        $calculationOutput->getNumberOfIteration(),
+                        $calculationOutput->getNumberOfLongPositions(),
+                        $calculationOutput->getNumberOfShortPositions(),
+                        $calculationOutput->getSl(),
+                    ]
+                );
+        }
+
+        return $sumResultOutput;
+    }
+
+
+    public function calculateRecordResult(): float
+    {
+        // TODO: Implement calculateRecordResult() method.
     }
 
     #[Pure] private function calculateHighLowDifference(Item $item): float
@@ -136,12 +198,12 @@ class StuckeyStrategy implements TradingStrategy
 
     #[Pure] private function isCalculationBufferReached(int $iteration): bool
     {
-        return $iteration > $this->iterationOffset + self::DEFAULT_CALCULATION_BUFFER;
+        return $iteration >= $this->iterationOffset + self::DEFAULT_CALCULATION_BUFFER;
     }
 
     #[Pure] private function getMeanHighLowDifference(array $highLowDifferences): float
     {
-        return $this->arrayMean(array_slice($highLowDifferences,  -5, 5));
+        return $this->mean(array_slice($highLowDifferences, -6, 6));
     }
 
     #[Pure] private function getLongPositionSellStop(Item $item, float $highLowDifferenceMean): float

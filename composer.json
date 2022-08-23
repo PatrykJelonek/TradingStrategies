@@ -18,6 +18,7 @@
         "phpunit/phpunit": "^9"
     },
     "require": {
-        "spatie/global-ray": "^1.0"
+        "spatie/global-ray": "^1.0",
+        "larapack/dd": "^1.1"
     }
 }

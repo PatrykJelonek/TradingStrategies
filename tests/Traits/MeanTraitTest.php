@@ -4,29 +4,22 @@ namespace TradingStrategies\Tests\Traits;
 
 use JetBrains\PhpStorm\ArrayShape;
 use PHPUnit\Framework\TestCase;
-use TradingStrategies\Traits\ArrayMeanTrait;
+use TradingStrategies\Traits\MeanTrait;
 
-class ArrayMeanTraitTest extends TestCase
+class MeanTraitTest extends TestCase
 {
     /**
-     * @covers ArrayMeanTrait::arrayMean
+     * @covers       MeanTrait::mean
      * @dataProvider getShouldReturnExpectedMeanTestDataProvider
      */
     public function testShouldReturnExpectedMean(array $array, $expectedMean): void
     {
-        /** @var ArrayMeanTrait $trait */
-        $trait = $this->getMockForTrait(ArrayMeanTrait::class);
-        self::assertSame($expectedMean, round($trait->arrayMean($array), 2));
+        /** @var MeanTrait $trait */
+        $trait = $this->getMockForTrait(MeanTrait::class);
+        self::assertSame($expectedMean, round($trait->mean($array), 2));
     }
 
-    #[ArrayShape(
-        [
-            'testCaseName' => [
-                'array' => 'array',
-                'expectedMean' => 'float',
-            ],
-        ]
-    )]
+    #[ArrayShape(['testCaseName' => ['array' => 'array', 'expectedMean' => 'float',]])]
     public function getShouldReturnExpectedMeanTestDataProvider(): array
     {
         return [

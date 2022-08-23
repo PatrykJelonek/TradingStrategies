@@ -2,9 +2,9 @@
 
 namespace TradingStrategies\Traits;
 
-trait ArrayMeanTrait
+trait MeanTrait
 {
-    public function arrayMean(array $array): float
+    public function mean(array $array): float
     {
         $mean = 0;
 
