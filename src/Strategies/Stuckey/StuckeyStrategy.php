@@ -61,18 +61,16 @@ class StuckeyStrategy implements TradingStrategy
     public function __invoke()
     {
         try {
-            $calculationParams = new CalculationParams();
-            $calculationParams
-                ->setStockData($this->data)
-                ->setStockDataSize($this->dataSize)
-                ->setCalculationOffset(self::DEFAULT_ITERATION_OFFSET)
-                ->setCalculationBuffer(self::DEFAULT_CALCULATION_BUFFER)
-                ->setFactor(self::DEFAULT_FACTOR);
-
-            $calculationOutput = $this->calculatePivots($calculationParams);
-            $sumResult = $this->sumResult($calculationOutput);
-
-            dump($sumResult->getZsr());
+//            $calculationParams = new CalculationParams();
+//            $calculationParams
+//                ->setStockData($this->data)
+//                ->setStockDataSize($this->dataSize)
+//                ->setCalculationOffset(self::DEFAULT_ITERATION_OFFSET)
+//                ->setCalculationBuffer(self::DEFAULT_CALCULATION_BUFFER)
+//                ->setFactor(self::DEFAULT_FACTOR);
+//
+//            $calculationOutput = $this->calculatePivots($calculationParams);
+//            $sumResult = $this->sumResult($calculationOutput);
         } catch (StrategyException $exception) {
             echo "[{$exception->getCode()}] - {$exception->getMessage()}";
         }
@@ -161,8 +159,11 @@ class StuckeyStrategy implements TradingStrategy
 
         $zsl = $this->cumulativeSum($calculationOutput->getZl());
         $zss = $this->cumulativeSum($calculationOutput->getZs());
+        $zcum = [];
 
-        $zcum = array_merge($zsl, $zss);
+        foreach ($zsl as $index => $value) {
+            $zcum[] = $value + $zss[$index];
+        }
 
         if (end($zcum) > $calculationOutput->getCalculationParams()->getRec()) {
             $calculationOutput->getCalculationParams()->setRec(end($zcum));
@@ -185,10 +186,23 @@ class StuckeyStrategy implements TradingStrategy
         return $sumResultOutput;
     }
 
-
-    public function calculateRecordResult(): float
+    public function calculateRecordResult(SumResultOutput $params): array
     {
-        // TODO: Implement calculateRecordResult() method.
+        $obni = [];
+        $mloc = [];
+        $zr = $params->getZr();
+        $zrSize = count($zr);
+
+        for ($j = 1; $j < $zrSize; $j++) {
+            $obni[$j] = 0;
+            $mloc[$j] = max(array_slice($zr, 0, $j));
+
+            if ($params->getZr()[$j] < $mloc[$j]) {
+                $obni[$j] = $mloc[$j] - $zr[$j];
+            }
+        }
+
+        return $obni;
     }
 
     #[Pure] private function calculateHighLowDifference(Item $item): float

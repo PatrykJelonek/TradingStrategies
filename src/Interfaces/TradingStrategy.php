@@ -16,5 +16,5 @@ interface TradingStrategy
 
     public function sumResult(CalculationOutput $calculationOutput): SumResultOutput;
 
-    public function calculateRecordResult(): float;
+    public function calculateRecordResult(SumResultOutput $params): array;
 }

@@ -3,12 +3,16 @@
 namespace TradingStrategies;
 
 use TradingStrategies\Strategies\Stuckey\StuckeyStrategy;
+use TradingStrategies\Structures\CalculationParams;
 use TradingStrategies\Structures\Item;
 use TradingStrategies\Structures\OHLC;
 
 class SA
 {
-    public function __invoke()
+    /**
+     * @throws Strategies\StrategyException
+     */
+    public function __invoke(): array
     {
         $data = json_decode(file_get_contents("./Data/FW20WS210120.json"), true);
         $parsedData = [];
@@ -28,7 +32,52 @@ class SA
         }
 
         if (!empty($parsedData)) {
-            (new StuckeyStrategy($parsedData))();
+            $stuckeyStrategy = new StuckeyStrategy($parsedData);
+
+            $calculationParams = new CalculationParams();
+            $calculationParams
+                ->setStockData($parsedData)
+                ->setStockDataSize(count($parsedData))
+                ->setCalculationOffset(3900)
+                ->setCalculationBuffer(100)
+                ->setFactor(0.5);
+
+            $calculationOutput = $stuckeyStrategy->calculatePivots($calculationParams);
+            $sumResult = $stuckeyStrategy->sumResult($calculationOutput);
+            $recordResult = $stuckeyStrategy->calculateRecordResult($sumResult);
+
+            $x = [];
+            foreach ($sumResult->getZr() as $index => $value) {
+                $x[] = $index;
+            }
+
+            //$zlr = $sumResult->getZlr();
+            //$y = $zlr[count($parsedData) - count($x) + count($sumResult->getZr())];
+
+            $result = [];
+
+            foreach ($sumResult->getZr() as $index => $value) {
+                $result['zr'][] = [
+                    'y' => $value,
+                    'label' => $index + 3900,
+                ];
+            }
+
+            foreach ($sumResult->getZlr() as $index => $value) {
+                $result['zlr'][] = [
+                    'y' => $value,
+                    'label' => $index + 3900,
+                ];
+            }
+
+            foreach ($sumResult->getZsr() as $index => $value) {
+                $result['zsr'][] = [
+                    'y' => $value,
+                    'label' => $index + 3900,
+                ];
+            }
+
+            return $result;
         }
     }
 }
