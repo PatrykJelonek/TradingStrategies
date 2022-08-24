@@ -36,8 +36,8 @@ class SA
 
             $calculationParams = new CalculationParams();
             $calculationParams
-                ->setStockData($parsedData)
-                ->setStockDataSize(count($parsedData))
+                ->setMarketData($parsedData)
+                ->setMarketDataSize(count($parsedData))
                 ->setCalculationOffset(3900)
                 ->setCalculationBuffer(100)
                 ->setFactor(0.5);

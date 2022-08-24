@@ -9,8 +9,8 @@ class CalculationParams
     /**
      * @var Item[]
      */
-    private array $stockData;
-    private int $stockDataSize;
+    private array $marketData;
+    private int $marketDataSize;
 
     private int $calculationOffset = 0;
     private int $calculationBuffer = 0;
@@ -18,25 +18,25 @@ class CalculationParams
 
     private float $rec = -1111.0;
 
-    public function getStockData(): array
+    public function getMarketData(): array
     {
-        return $this->stockData;
+        return $this->marketData;
     }
 
-    public function setStockData(array $stockData): CalculationParams
+    public function setMarketData(array $marketData): CalculationParams
     {
-        $this->stockData = $stockData;
+        $this->marketData = $marketData;
         return $this;
     }
 
-    public function getStockDataSize(): int
+    public function getMarketDataSize(): int
     {
-        return $this->stockDataSize;
+        return $this->marketDataSize;
     }
 
-    public function setStockDataSize(int $stockDataSize): CalculationParams
+    public function setMarketDataSize(int $marketDataSize): CalculationParams
     {
-        $this->stockDataSize = $stockDataSize;
+        $this->marketDataSize = $marketDataSize;
         return $this;
     }
 

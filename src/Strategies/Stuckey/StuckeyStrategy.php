@@ -78,7 +78,7 @@ class StuckeyStrategy implements TradingStrategy
 
     public function calculatePivots(CalculationParams $params): CalculationOutput
     {
-        $data = $params->getStockData();
+        $data = $params->getMarketData();
         $output = new CalculationOutput();
 
         if (empty($data)) {
@@ -91,7 +91,7 @@ class StuckeyStrategy implements TradingStrategy
         $highLowDifferences = [];
         $meanHighLowDifferences = [];
 
-        for ($iteration = $params->getCalculationOffset(); $iteration < $params->getStockDataSize(); $iteration++) {
+        for ($iteration = $params->getCalculationOffset(); $iteration < $params->getMarketDataSize(); $iteration++) {
             $this->numberOfIterations++;
             $this->zl[$iteration] = 0;
             $this->zs[$iteration] = 0;
