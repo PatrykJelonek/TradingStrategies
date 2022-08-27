@@ -1,10 +1,10 @@
 <?php
 
-namespace TradingStrategies\Tests\Traits;
+namespace TradingStrategies\Exceptions\Tests\Traits;
 
 use JetBrains\PhpStorm\ArrayShape;
 use PHPUnit\Framework\TestCase;
-use TradingStrategies\Traits\MeanTrait;
+use TradingStrategies\Exceptions\Traits\MeanTrait;
 
 class MeanTraitTest extends TestCase
 {

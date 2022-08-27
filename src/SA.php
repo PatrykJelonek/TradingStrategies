@@ -4,13 +4,12 @@ namespace TradingStrategies;
 
 use TradingStrategies\Strategies\Stuckey\StuckeyStrategy;
 use TradingStrategies\Structures\CalculationParams;
-use TradingStrategies\Structures\Item;
-use TradingStrategies\Structures\OHLC;
+use TradingStrategies\Structures\Candlestick;
 
 class SA
 {
     /**
-     * @throws Strategies\StrategyException
+     * @throws TradingStrategies\StrategyException
      */
     public function __invoke(): array
     {
@@ -18,17 +17,14 @@ class SA
         $parsedData = [];
 
         foreach ($data as $item) {
-            $parsedData[] = (new Item())
+            $parsedData[] = (new Candlestick())
                 ->setDate($item['date'])
                 ->setLop($item['lop'])
                 ->setVolumen($item['volumen'])
-                ->setOhlc(
-                    (new OHLC())
-                        ->setHigh($item['high'])
-                        ->setLow($item['low'])
-                        ->setOpen($item['open'])
-                        ->setClose($item['close'])
-                );
+                ->setHigh($item['high'])
+                ->setLow($item['low'])
+                ->setOpen($item['open'])
+                ->setClose($item['close']);
         }
 
         if (!empty($parsedData)) {

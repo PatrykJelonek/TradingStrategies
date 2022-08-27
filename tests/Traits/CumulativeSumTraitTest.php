@@ -1,10 +1,10 @@
 <?php
 
-namespace TradingStrategies\Tests\Traits;
+namespace TradingStrategies\Exceptions\Tests\Traits;
 
 use JetBrains\PhpStorm\ArrayShape;
 use PHPUnit\Framework\TestCase;
-use TradingStrategies\Traits\CumulativeSumTrait;
+use TradingStrategies\Exceptions\Traits\CumulativeSumTrait;
 
 class CumulativeSumTraitTest extends TestCase
 {

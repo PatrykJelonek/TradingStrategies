@@ -2,10 +2,10 @@
 
 namespace TradingStrategies\Interfaces;
 
-use TradingStrategies\Strategies\StrategyException;
-use TradingStrategies\Structures\CalculationOutput;
-use TradingStrategies\Structures\CalculationParams;
-use TradingStrategies\Structures\SumResultOutput;
+use TradingStrategies\Exceptions\StrategyException;
+use TradingStrategies\Exceptions\Structures\CalculationOutput;
+use TradingStrategies\Exceptions\Structures\CalculationParams;
+use TradingStrategies\Exceptions\Structures\SumResultOutput;
 
 interface TradingStrategy
 {

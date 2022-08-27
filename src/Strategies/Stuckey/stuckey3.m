@@ -64,7 +64,6 @@ if zcum(end)>rec
     zr=zcum;
     zlr=zsl;
     zsr=zss;
-
 end
 
 

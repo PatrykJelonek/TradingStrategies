@@ -1,6 +1,6 @@
 <?php
 
-namespace TradingStrategies\Strategies\Seidenberg;
+namespace TradingStrategies\Seidenberg;
 
 class SeidenbergStrategy
 {

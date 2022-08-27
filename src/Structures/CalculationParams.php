@@ -7,7 +7,7 @@ class CalculationParams
     private const DEFAULT_FACTOR = 0.5;
 
     /**
-     * @var Item[]
+     * @var Candlestick[]
      */
     private array $marketData;
     private int $marketDataSize;
