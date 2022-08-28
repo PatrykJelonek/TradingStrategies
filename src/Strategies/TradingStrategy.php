@@ -2,7 +2,7 @@
 
 namespace TradingStrategies\Strategies;
 
-use TradingStrategies\Structures\MarketAnalisysResult;
+use TradingStrategies\Structures\MarketAnalysisResult;
 use TradingStrategies\Structures\CalculationConfig;
 use TradingStrategies\Structures\ExchangeConfig;
 use TradingStrategies\Structures\MarketData;
@@ -24,8 +24,8 @@ abstract class TradingStrategy
     protected int $numberOfShortPositions = 0;
     protected int $numberOfStopLossOrders = 0;
 
-    protected ?float $stopLossLimit = null;
-    protected float $rec = 0.0;
+    protected ?float $stopLossLimit = 50.0;
+    protected float $rec = -1111.0;
 
     protected array $longPositionsPivotPoints = [];
     protected array $shortPositionsPivotPoints = [];
@@ -43,7 +43,13 @@ abstract class TradingStrategy
         $this->marketData = $marketData;
     }
 
-    abstract public function analyzeMarketByStrategy(): MarketAnalisysResult;
+    public function __invoke(): CumulativeProfitsCalculationResult
+    {
+        $this->analyzeMarketByStrategy();
+        return $this->calculateCumulativeProfits();
+    }
+
+    abstract public function analyzeMarketByStrategy(): MarketAnalysisResult;
 
     public function calculateCumulativeProfits(): CumulativeProfitsCalculationResult
     {
@@ -74,7 +80,7 @@ abstract class TradingStrategy
 
         for ($i = 1; $i < $numberOfProfitsEntries; $i++) {
             $theBiggestProfitPerIteration[$i] = 0;
-            $maxProfitPerIteration = max(array_slice($cumulativeLongAndShortPositionsProfits, 0, $i));
+            $maxProfitPerIteration[$i] = max(array_slice($cumulativeLongAndShortPositionsProfits, 0, $i));
 
             if ($cumulativeLongAndShortPositionsProfits[$i] < $maxProfitPerIteration[$i]) {
                 $theBiggestProfitPerIteration[$i] = $maxProfitPerIteration[$i] - $cumulativeLongAndShortPositionsProfits[$i];

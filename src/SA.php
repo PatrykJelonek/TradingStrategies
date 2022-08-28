@@ -2,78 +2,70 @@
 
 namespace TradingStrategies;
 
+use JetBrains\PhpStorm\Pure;
+use TradingStrategies\Strategies\Seidenberg\SeidenbergStrategy;
 use TradingStrategies\Strategies\Stuckey\StuckeyStrategy;
-use TradingStrategies\Structures\CalculationParams;
-use TradingStrategies\Structures\Candlestick;
+use TradingStrategies\Strategies\TradingStrategy;
+use TradingStrategies\Structures\CalculationConfig;
+use TradingStrategies\Structures\ExchangeConfig;
+use TradingStrategies\Structures\MarketData;
 
 class SA
 {
-    /**
-     * @throws TradingStrategies\StrategyException
-     */
     public function __invoke(): array
     {
-        $data = json_decode(file_get_contents("./Data/FW20WS210120.json"), true);
-        $parsedData = [];
+        //$marketData = (new MarketData())->readMarketDataFromJson("./Data/FW20WS210120.json");
+        $marketData = (new MarketData())->readMarketDataForBitfinex("./Data/bitfinex_btc_usd.json");
 
-        foreach ($data as $item) {
-            $parsedData[] = (new Candlestick())
-                ->setDate($item['date'])
-                ->setLop($item['lop'])
-                ->setVolumen($item['volumen'])
-                ->setHigh($item['high'])
-                ->setLow($item['low'])
-                ->setOpen($item['open'])
-                ->setClose($item['close']);
-        }
+        if (!empty($marketData->getData())) {
+            $strategy = $this->getStuckeyStrategy($marketData);
+            $result = $strategy->analyzeMarketByStrategy();
+            $cumulativeProfits = $strategy->calculateCumulativeProfits();
 
-        if (!empty($parsedData)) {
-            $stuckeyStrategy = new StuckeyStrategy($parsedData);
-
-            $calculationParams = new CalculationParams();
-            $calculationParams
-                ->setMarketData($parsedData)
-                ->setMarketDataSize(count($parsedData))
-                ->setCalculationOffset(3900)
-                ->setCalculationBuffer(100)
-                ->setFactor(0.5);
-
-            $calculationOutput = $stuckeyStrategy->calculatePivots($calculationParams);
-            $sumResult = $stuckeyStrategy->sumResult($calculationOutput);
-            $recordResult = $stuckeyStrategy->calculateRecordResult($sumResult);
-
-            $x = [];
-            foreach ($sumResult->getZr() as $index => $value) {
-                $x[] = $index;
-            }
-
-            //$zlr = $sumResult->getZlr();
-            //$y = $zlr[count($parsedData) - count($x) + count($sumResult->getZr())];
+           dump($result);
 
             $result = [];
 
-            foreach ($sumResult->getZr() as $index => $value) {
+            foreach ($cumulativeProfits->getCumulativeLongAndShortPositionsProfits() as $index => $value) {
                 $result['zr'][] = [
                     'y' => $value,
-                    'label' => $index + 3900,
+                    'label' => $index + 5,
                 ];
             }
 
-            foreach ($sumResult->getZlr() as $index => $value) {
+            foreach ($cumulativeProfits->getCumulativeLongPositionsProfits() as $index => $value) {
                 $result['zlr'][] = [
                     'y' => $value,
-                    'label' => $index + 3900,
+                    'label' => $index + 5,
                 ];
             }
 
-            foreach ($sumResult->getZsr() as $index => $value) {
+            foreach ($cumulativeProfits->getCumulativeShortPositionsProfits() as $index => $value) {
                 $result['zsr'][] = [
                     'y' => $value,
-                    'label' => $index + 3900,
+                    'label' => $index + 5,
                 ];
             }
 
             return $result;
         }
+
+        return [];
+    }
+
+    #[Pure] private function getStuckeyStrategy(MarketData $marketData): TradingStrategy
+    {
+        $exchangeConfig = new ExchangeConfig(1);
+        $calculationConfig = new CalculationConfig(10, 2);
+
+        return new StuckeyStrategy($exchangeConfig, $calculationConfig, $marketData);
+    }
+
+    #[Pure] private function getSeidenbergStrategy(MarketData $marketData): TradingStrategy
+    {
+        $exchangeConfig = new ExchangeConfig(1);
+        $calculationConfig = new CalculationConfig(5, 0);
+
+        return new SeidenbergStrategy($exchangeConfig, $calculationConfig, $marketData);
     }
 }

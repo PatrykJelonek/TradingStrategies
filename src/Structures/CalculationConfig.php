@@ -4,10 +4,10 @@ namespace TradingStrategies\Structures;
 
 class CalculationConfig
 {
-    public int $offset = 0;
-    public int $buffer = 0;
+    protected int $offset = 0;
+    protected int $buffer = 0;
 
-    public function __construct(int $iterationsOffset, int $calculationBuffer)
+    public function __construct(int $iterationsOffset = 0, int $calculationBuffer = 0)
     {
         $this->offset = $iterationsOffset;
         $this->buffer = $calculationBuffer;

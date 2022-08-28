@@ -3,221 +3,116 @@
 namespace TradingStrategies\Strategies\Stuckey;
 
 use JetBrains\PhpStorm\Pure;
-use TradingStrategies\Interfaces\TradingStrategy;
-use TradingStrategies\StrategyException;
-use TradingStrategies\Structures\CalculationOutput;
-use TradingStrategies\Structures\CalculationParams;
-use TradingStrategies\Structures\SumResultOutput;
-use TradingStrategies\Traits\CumulativeSumTrait;
-use TradingStrategies\Traits\MeanTrait;
+use TradingStrategies\Strategies\TradingStrategy;
 use TradingStrategies\Structures\Candlestick;
+use TradingStrategies\Structures\MarketAnalysisResult;
 
-/**
- * Class to calculate trading pivots by Stuckey's strategy
- */
-class StuckeyStrategy implements TradingStrategy
+class StuckeyStrategy extends TradingStrategy
 {
-    use MeanTrait, CumulativeSumTrait;
+    public const ORIGINAL_STUCKEY_FACTOR = 0.5;
 
-    private const ORIGINAL_STUCKEY_FACTOR = 0.5;
-    private const DEFAULT_ITERATION_OFFSET = 3899;
-    private const DEFAULT_SPREAD = 1;
-    private const DEFAULT_CALCULATION_BUFFER = 100;
+    protected float $stuckeyFactor = self::ORIGINAL_STUCKEY_FACTOR;
+    protected float $rec = -1111;
+    protected ?float $stopLossLimit = 50;
 
-    private float $iterationOffset = self::DEFAULT_ITERATION_OFFSET;
-    private float $calculationBuffer = self::DEFAULT_CALCULATION_BUFFER;
-    private float $spread = self::DEFAULT_SPREAD;
-    private float $factor = self::ORIGINAL_STUCKEY_FACTOR;
-
-    private float $stuckeyFactor = self::ORIGINAL_STUCKEY_FACTOR;
-
-    private int $numberOfLongPositions = 0;
-    private int $numberOfShortPositions = 0;
-
-    private int $rec = -1111;
-    private int $stopLossLimit = 50;
-    private int $numberOfIterationBelowStopLoss = 0;
-
-    private array $longPositionsPivotPoints = [];
-    private array $shortPositionsPivotPoints = [];
-
-    private array $longPositionProfits = [];
-    private array $shortPositionProfits = [];
-
-
-    public function __invoke()
+    public function analyzeMarketByStrategy(): MarketAnalysisResult
     {
-        try {
+        $marketAnalysisResult = new MarketAnalysisResult();
+        $this->numberOfIteration = 0;
 
-        } catch (StrategyException $exception) {
-            echo "[{$exception->getCode()}] - {$exception->getMessage()}";
-        }
-    }
+        $highLowDifferencesByIteration = [];
+        $meanOfHighLowDifferencesByIteration = [];
 
-    public function calculatePivots(CalculationParams $params): CalculationOutput
-    {
-        $numberOfIterations = 0;
-        $marketData = $params->getMarketData();
-        $output = new CalculationOutput();
+        for ($i = $this->calculationConfig->getOffset(); $i < $this->marketData->getSize(); $i++) {
+            $this->numberOfIteration++;
 
-        $highLowDifferences = [];
-        $meanHighLowDifferences = [];
+            $this->longPositionsProfits[$i] = 0;
+            $this->shortPositionsProfits[$i] = 0;
 
-        for ($iteration = $params->getCalculationOffset(); $iteration < $params->getMarketDataSize(); $iteration++) {
-            $numberOfIterations++;
+            $currentCandlestick = $this->marketData->getData()[$i];
+            $highLowDifferencesByIteration[$i] = $this->marketData->getData()[$i - 1]->getHighLowDifference();
 
-            $this->longPositionProfits[$iteration] = 0;
-            $this->shortPositionProfits[$iteration] = 0;
-            $currentIterationItem = $marketData[$iteration];
-
-            $highLowDifferences[$iteration] = $this->calculateHighLowDifference($marketData[$iteration - 1]);
-
-            if ($this->isCalculationBufferReached($iteration)) {
-                $meanHighLowDifferences[$iteration] = $this->getMeanHighLowDifference($highLowDifferences);
-
-                $this->longPositionsPivotPoints[$iteration] = $this->getLongPositionPivotPoint(
-                    $currentIterationItem,
-                    $meanHighLowDifferences[$iteration]
+            if ($this->calculationConfig->isBufferReached($i)) {
+                $meanOfHighLowDifferencesByIteration[$i] = $this->mean(
+                    array_slice($highLowDifferencesByIteration, -6, 6)
                 );
 
-                if ($currentIterationItem->getOhlc()->getHigh() > $this->longPositionsPivotPoints[$iteration]) {
+                $this->longPositionsPivotPoints[$i] = $this->getLongPositionPivotPoint(
+                    $currentCandlestick,
+                    $meanOfHighLowDifferencesByIteration[$i]
+                );
+
+                if ($currentCandlestick->getHigh() > $this->longPositionsPivotPoints[$i]) {
                     $this->numberOfLongPositions++;
-                    $this->longPositionProfits[$iteration] = $currentIterationItem->getOhlc()->getClose(
-                        ) - $this->longPositionsPivotPoints[$iteration] - $this->spread;
+                    $this->longPositionsProfits[$i] = $this->getLongPositionProfit(
+                        $currentCandlestick,
+                        $this->longPositionsPivotPoints[$i]
+                    );
                 }
 
-                if (!empty($this->longPositionProfits[$iteration]) && $this->longPositionProfits[$iteration] < -$this->stopLossLimit) {
-                    $this->longPositionProfits[$iteration] = -$this->stopLossLimit - $this->spread;
-                    $this->numberOfIterationBelowStopLoss++;
+                if (isset($this->longPositionsProfits[$i]) && $this->longPositionsProfits[$i] < -$this->stopLossLimit) {
+                    $this->longPositionsProfits[$i] = -$this->stopLossLimit - $this->exchangeConfig->getSpread();
+                    $this->numberOfStopLossOrders++;
                 }
 
-                $this->shortPositionsPivotPoints[$iteration] = $this->getShortPositionPivotPoint(
-                    $currentIterationItem,
-                    $meanHighLowDifferences[$iteration]
+                $this->shortPositionsPivotPoints[$i] = $this->getShortPositionPivotPoint(
+                    $currentCandlestick,
+                    $meanOfHighLowDifferencesByIteration[$i]
                 );
 
-                $isBelow = $this->isBelowShortPositionSellStop(
-                    $currentIterationItem,
-                    $this->shortPositionsPivotPoints[$iteration]
-                );
-
-                if ($isBelow) {
+                if ($currentCandlestick->getLow() < $this->shortPositionsPivotPoints[$i]) {
                     $this->numberOfShortPositions++;
-                    $this->shortPositionProfits[$iteration] = $this->shortPositionsPivotPoints[$iteration] - $currentIterationItem->getOhlc(
-                        )->getClose() - $this->spread;
+                    $this->shortPositionsProfits[$i] = $this->getShortPositionProfit(
+                        $currentCandlestick,
+                        $this->shortPositionsPivotPoints[$i]
+                    );
                 }
 
-                if (!empty($this->shortPositionProfits[$iteration]) && $this->shortPositionProfits[$iteration] < -$this->stopLossLimit) {
-                    $this->shortPositionProfits[$iteration] = -$this->stopLossLimit - $this->spread;
-                    $this->numberOfIterationBelowStopLoss++;
+                if (isset($this->shortPositionsProfits[$i]) && $this->shortPositionsProfits[$i] < -$this->stopLossLimit) {
+                    $this->shortPositionsProfits[$i] = -$this->stopLossLimit - $this->exchangeConfig->getSpread();
+                    $this->numberOfStopLossOrders++;
                 }
             }
         }
 
-        $output
-            ->setCalculationParams($params)
-            ->setNumberOfIteration($numberOfIterations)
+        $marketAnalysisResult
+            ->setFactor($this->stuckeyFactor)
+            ->setNumberOfIterations($this->numberOfIteration)
             ->setNumberOfLongPositions($this->numberOfLongPositions)
             ->setNumberOfShortPositions($this->numberOfShortPositions)
-            ->setSl($this->numberOfIterationBelowStopLoss)
-            ->setZl($this->longPositionProfits)
-            ->setZs($this->shortPositionProfits);
+            ->setNumberOfStopLossOrders($this->numberOfStopLossOrders);
 
-        return $output;
+        return $marketAnalysisResult;
     }
 
-    public function sumResult(CalculationOutput $calculationOutput): SumResultOutput
+    #[Pure] private function getLongPositionPivotPoint(Candlestick $candlestick, float $highLowDifferencesMean): float
     {
-        $sumResultOutput = new SumResultOutput();
-
-        $zsl = $this->cumulativeSum($calculationOutput->getZl());
-        $zss = $this->cumulativeSum($calculationOutput->getZs());
-        $zcum = [];
-
-        foreach ($zsl as $index => $value) {
-            $zcum[] = $value + $zss[$index];
-        }
-
-        if (end($zcum) > $calculationOutput->getCalculationParams()->getRec()) {
-            $calculationOutput->getCalculationParams()->setRec(end($zcum));
-
-            $sumResultOutput
-                ->setZr($zcum)
-                ->setZlr($zsl)
-                ->setZsr($zss)
-                ->setParopt(
-                    [
-                        $calculationOutput->getCalculationParams()->getFactor(),
-                        $calculationOutput->getNumberOfIteration(),
-                        $calculationOutput->getNumberOfLongPositions(),
-                        $calculationOutput->getNumberOfShortPositions(),
-                        $calculationOutput->getSl(),
-                    ]
-                );
-        }
-
-        return $sumResultOutput;
+        return $candlestick->getOpen() + $this->stuckeyFactor * $highLowDifferencesMean;
     }
 
-    public function calculateRecordResult(SumResultOutput $params): array
+    #[Pure] private function getLongPositionProfit(Candlestick $candlestick, float $pivotPoint): float
     {
-        $obni = [];
-        $mloc = [];
-        $zr = $params->getZr();
-        $zrSize = count($zr);
-
-        for ($j = 1; $j < $zrSize; $j++) {
-            $obni[$j] = 0;
-            $mloc[$j] = max(array_slice($zr, 0, $j));
-
-            if ($params->getZr()[$j] < $mloc[$j]) {
-                $obni[$j] = $mloc[$j] - $zr[$j];
-            }
-        }
-
-        return $obni;
+        return $candlestick->getClose() - $pivotPoint - $this->exchangeConfig->getSpread();
     }
 
-    #[Pure] private function calculateHighLowDifference(Candlestick $item): float
+    #[Pure] private function getShortPositionPivotPoint(Candlestick $candlestick, float $highLowDifferencesMean): float
     {
-        return $item->getOhlc()->getHigh() - $item->getOhlc()->getLow();
+        return $candlestick->getOpen() - $this->stuckeyFactor * $highLowDifferencesMean;
     }
 
-    #[Pure] private function isCalculationBufferReached(int $iteration): bool
+    #[Pure] private function getShortPositionProfit(Candlestick $candlestick, float $pivotPoint): float
     {
-        return $iteration >= $this->iterationOffset + self::DEFAULT_CALCULATION_BUFFER;
+        return $pivotPoint - $candlestick->getClose() - $this->exchangeConfig->getSpread();
     }
 
-    #[Pure] private function getMeanHighLowDifference(array $highLowDifferences): float
+    public function getStuckeyFactor(): float
     {
-        return $this->mean(array_slice($highLowDifferences, -6, 6));
+        return $this->stuckeyFactor;
     }
 
-    #[Pure] private function getLongPositionPivotPoint(Candlestick $item, float $highLowDifferenceMean): float
+    public function setStuckeyFactor(float $stuckeyFactor): StuckeyStrategy
     {
-        return $item->getOhlc()->getOpen() + $this->factor * $highLowDifferenceMean;
-    }
-
-    #[Pure] private function getShortPositionPivotPoint(Candlestick $item, float $highLowDifferenceMean): float
-    {
-        return $item->getOhlc()->getOpen() - $this->factor * $highLowDifferenceMean;
-    }
-
-    #[Pure] private function isBelowShortPositionSellStop(Candlestick $item, float $shortPositionsSellStop): bool
-    {
-        return $item->getOhlc()->getLow() < $shortPositionsSellStop;
-    }
-
-    /**
-     * @throws StrategyException
-     */
-    private function checkMarketData(array $marketData): void
-    {
-        if (empty($marketData)) {
-            throw new StrategyException(
-                StrategyException::STRATEGY_EXCEPTION_MESSAGES[StrategyException::EMPTY_MARKET_DATA_EXCEPTION],
-                StrategyException::EMPTY_MARKET_DATA_EXCEPTION
-            );
-        }
+        $this->stuckeyFactor = $stuckeyFactor;
+        return $this;
     }
 }
