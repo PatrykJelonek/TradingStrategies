@@ -1,11 +1,17 @@
 <?php
+
+use TradingStrategies\Structures\Exchanges\CryptoCompare\CryptoCompareMarketData;
+
 include('./../vendor/autoload.php');
 
-$dataPoints = (new \TradingStrategies\SA())();
+$dataPoints = (new \TradingStrategies\GetStrategyResult())(
+    \TradingStrategies\Strategies\Stuckey\StuckeyStrategy::class,
+    \TradingStrategies\Exchanges\Poloniex\PoloniexMarketData::class
+);
 
-$zr = $dataPoints['zr'];
-$zlr = $dataPoints['zlr'];
-$zsr = $dataPoints['zsr'];
+$cumulativeLongAndShortPositionsProfits = $dataPoints['cumulativeLongAndShortPositionsProfits'];
+$cumulativeLongPositionsProfits = $dataPoints['cumulativeLongPositionsProfits'];
+$cumulativeShortPositionsProfits = $dataPoints['cumulativeShortPositionsProfits'];
 
 ?>
 
@@ -19,37 +25,40 @@ $zsr = $dataPoints['zsr'];
     <title>Strategies Test</title>
 
     <script>
-	    window.onload = function () {
+		window.onload = function () {
 
-		    var chart = new CanvasJS.Chart("chartContainer", {
-			    title: {
-				    text: "Chart"
-			    },
-			    axisY: {},
-			    data: [
+			var chart = new CanvasJS.Chart("chartContainer", {
+				title: {
+					text: "Chart"
+				},
+				axisY: {},
+				data: [
 					{
 						type: "line",
-                        color: "blue",
+						color: "blue",
 						axisXIndex: 0,
-						dataPoints: <?php echo json_encode($zr, JSON_NUMERIC_CHECK); ?>
+						dataPoints: <?php echo json_encode(
+                            $cumulativeLongAndShortPositionsProfits,
+                            JSON_NUMERIC_CHECK
+                        ); ?>
 					},
 					{
 						type: "line",
-                        color: "green",
+						color: "green",
 						axisXIndex: 1,
-						dataPoints: <?php echo json_encode($zlr, JSON_NUMERIC_CHECK); ?>
+						dataPoints: <?php echo json_encode($cumulativeLongPositionsProfits, JSON_NUMERIC_CHECK); ?>
 					},
 					{
 						type: "line",
-                        color: "red",
+						color: "red",
 						axisXIndex: 2,
-						dataPoints: <?php echo json_encode($zsr, JSON_NUMERIC_CHECK); ?>
+						dataPoints: <?php echo json_encode($cumulativeShortPositionsProfits, JSON_NUMERIC_CHECK); ?>
 					},
-                ]
-		    });
-		    chart.render();
+				]
+			});
+			chart.render();
 
-	    }
+		}
     </script>
 </head>
 <body>

@@ -9,11 +9,11 @@ use TradingStrategies\Structures\MarketAnalysisResult;
 
 class StuckeyStrategy extends TradingStrategy
 {
-    public const ORIGINAL_STUCKEY_FACTOR = 0.5;
+    public const ORIGINAL_STUCKEY_FACTOR = 0.003;
 
     protected float $stuckeyFactor = self::ORIGINAL_STUCKEY_FACTOR;
     protected float $rec = -1111;
-    protected ?float $stopLossLimit = 50;
+    protected ?float $stopLossLimit = 10;
 
     public function analyzeMarketByStrategy(): MarketAnalysisResult
     {
