@@ -5,6 +5,7 @@ namespace TradingStrategies;
 use JetBrains\PhpStorm\Pure;
 use TradingStrategies\Exchanges\Poloniex\PoloniexMarketData;
 use TradingStrategies\Strategies\Seidenberg\SeidenbergStrategy;
+use TradingStrategies\Strategies\SeidenbergStuckey\SeidenbergStuckeyStrategy;
 use TradingStrategies\Strategies\Stuckey\StuckeyStrategy;
 use TradingStrategies\Strategies\TradingStrategy;
 use TradingStrategies\Structures\CalculationConfig;
@@ -40,6 +41,9 @@ class GetStrategyResult
                 case SeidenbergStrategy::class:
                     $strategy = $this->getSeidenbergStrategy($marketData);
                     break;
+                case SeidenbergStuckeyStrategy::class:
+                    $strategy = $this->getSeidenbergStuckeyStrategy($marketData);
+                    break;
                 default:
                     return [];
             }
@@ -57,8 +61,8 @@ class GetStrategyResult
 
     #[Pure] private function getStuckeyStrategy(MarketData $marketData): TradingStrategy
     {
-        $exchangeConfig = new ExchangeConfig(0.05);
-        $calculationConfig = new CalculationConfig(7, 2);
+        $exchangeConfig = new ExchangeConfig(1);
+        $calculationConfig = new CalculationConfig(3998, 100);
 
         return new StuckeyStrategy($exchangeConfig, $calculationConfig, $marketData);
     }
@@ -69,6 +73,14 @@ class GetStrategyResult
         $calculationConfig = new CalculationConfig(5, 0);
 
         return new SeidenbergStrategy($exchangeConfig, $calculationConfig, $marketData);
+    }
+
+    #[Pure] private function getSeidenbergStuckeyStrategy(MarketData $marketData): TradingStrategy
+    {
+        $exchangeConfig = new ExchangeConfig(1);
+        $calculationConfig = new CalculationConfig(100, 0);
+
+        return new SeidenbergStuckeyStrategy($exchangeConfig, $calculationConfig, $marketData);
     }
 
     #[Pure] private function getResult(CumulativeProfitsCalculationResult $cumulativeProfits): array

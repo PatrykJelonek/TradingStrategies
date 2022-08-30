@@ -5,8 +5,7 @@ use TradingStrategies\Structures\Exchanges\CryptoCompare\CryptoCompareMarketData
 include('./../vendor/autoload.php');
 
 $dataPoints = (new \TradingStrategies\GetStrategyResult())(
-    \TradingStrategies\Strategies\Stuckey\StuckeyStrategy::class,
-    \TradingStrategies\Exchanges\Poloniex\PoloniexMarketData::class
+    TradingStrategies\Strategies\SeidenbergStuckey\SeidenbergStuckeyStrategy::class
 );
 
 $cumulativeLongAndShortPositionsProfits = $dataPoints['cumulativeLongAndShortPositionsProfits'];

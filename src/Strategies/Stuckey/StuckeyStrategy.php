@@ -9,11 +9,11 @@ use TradingStrategies\Structures\MarketAnalysisResult;
 
 class StuckeyStrategy extends TradingStrategy
 {
-    public const ORIGINAL_STUCKEY_FACTOR = 0.003;
+    public const ORIGINAL_STUCKEY_FACTOR = 0.5;
 
     protected float $stuckeyFactor = self::ORIGINAL_STUCKEY_FACTOR;
     protected float $rec = -1111;
-    protected ?float $stopLossLimit = 10;
+    protected ?float $stopLimit = 50;
 
     public function analyzeMarketByStrategy(): MarketAnalysisResult
     {
@@ -50,9 +50,9 @@ class StuckeyStrategy extends TradingStrategy
                     );
                 }
 
-                if (isset($this->longPositionsProfits[$i]) && $this->longPositionsProfits[$i] < -$this->stopLossLimit) {
-                    $this->longPositionsProfits[$i] = -$this->stopLossLimit - $this->exchangeConfig->getSpread();
-                    $this->numberOfStopLossOrders++;
+                if (isset($this->longPositionsProfits[$i]) && $this->longPositionsProfits[$i] < -$this->stopLimit) {
+                    $this->longPositionsProfits[$i] = -$this->stopLimit - $this->exchangeConfig->getSpread();
+                    $this->numberOfStopsOrders++;
                 }
 
                 $this->shortPositionsPivotPoints[$i] = $this->getShortPositionPivotPoint(
@@ -68,9 +68,9 @@ class StuckeyStrategy extends TradingStrategy
                     );
                 }
 
-                if (isset($this->shortPositionsProfits[$i]) && $this->shortPositionsProfits[$i] < -$this->stopLossLimit) {
-                    $this->shortPositionsProfits[$i] = -$this->stopLossLimit - $this->exchangeConfig->getSpread();
-                    $this->numberOfStopLossOrders++;
+                if (isset($this->shortPositionsProfits[$i]) && $this->shortPositionsProfits[$i] < -$this->stopLimit) {
+                    $this->shortPositionsProfits[$i] = -$this->stopLimit - $this->exchangeConfig->getSpread();
+                    $this->numberOfStopsOrders++;
                 }
             }
         }
@@ -80,7 +80,7 @@ class StuckeyStrategy extends TradingStrategy
             ->setNumberOfIterations($this->numberOfIteration)
             ->setNumberOfLongPositions($this->numberOfLongPositions)
             ->setNumberOfShortPositions($this->numberOfShortPositions)
-            ->setNumberOfStopLossOrders($this->numberOfStopLossOrders);
+            ->setNumberOfStopLossOrders($this->numberOfStopsOrders);
 
         return $marketAnalysisResult;
     }

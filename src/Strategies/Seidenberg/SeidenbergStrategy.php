@@ -9,12 +9,12 @@ use TradingStrategies\Structures\MarketAnalysisResult;
 
 class SeidenbergStrategy extends TradingStrategy
 {
-    public const DEFAULT_SEIDENBERG_FACTOR = 0.65;
+    public const ORIGINAL_SEIDENBERG_FACTOR = 0.68;
 
     protected int $numberOfOpeningBelowYesterdayStop = 0;
-    protected float $seidenbergFactor = self::DEFAULT_SEIDENBERG_FACTOR;
+    protected float $seidenbergFactor = self::ORIGINAL_SEIDENBERG_FACTOR;
     protected float $rec = -111111;
-    protected ?float $stopLossLimit = 16.0;
+    protected ?float $stopLimit = 16.0;
 
     public function analyzeMarketByStrategy(): MarketAnalysisResult
     {
@@ -54,9 +54,9 @@ class SeidenbergStrategy extends TradingStrategy
                     $currentCandlestick->getOpen()
                 );
 
-                if (($currentCandlestick->getOpen() - $currentCandlestick->getLow()) > $this->stopLossLimit) {
-                    $this->numberOfStopLossOrders++;
-                    $this->longPositionsProfits[$i] = -$this->stopLossLimit - $this->exchangeConfig->getSpread();
+                if (($currentCandlestick->getOpen() - $currentCandlestick->getLow()) > $this->stopLimit) {
+                    $this->numberOfStopsOrders++;
+                    $this->longPositionsProfits[$i] = -$this->stopLimit - $this->exchangeConfig->getSpread();
                 }
             }
 
@@ -83,9 +83,9 @@ class SeidenbergStrategy extends TradingStrategy
                     $currentCandlestick->getOpen()
                 );
 
-                if (($currentCandlestick->getHigh() - $currentCandlestick->getOpen()) > $this->stopLossLimit) {
-                    $this->numberOfStopLossOrders++;
-                    $this->shortPositionsProfits[$i] = -$this->stopLossLimit - $this->exchangeConfig->getSpread();
+                if (($currentCandlestick->getHigh() - $currentCandlestick->getOpen()) > $this->stopLimit) {
+                    $this->numberOfStopsOrders++;
+                    $this->shortPositionsProfits[$i] = -$this->stopLimit - $this->exchangeConfig->getSpread();
                 }
             }
         }
@@ -95,7 +95,7 @@ class SeidenbergStrategy extends TradingStrategy
             ->setNumberOfIterations($this->numberOfIteration)
             ->setNumberOfLongPositions($this->numberOfLongPositions)
             ->setNumberOfShortPositions($this->numberOfShortPositions)
-            ->setNumberOfStopLossOrders($this->numberOfStopLossOrders)
+            ->setNumberOfStopLossOrders($this->numberOfStopsOrders)
             ->setNumberOfOpeningBelowYesterdayStop($this->numberOfOpeningBelowYesterdayStop);
 
         return $marketAnalysisResult;

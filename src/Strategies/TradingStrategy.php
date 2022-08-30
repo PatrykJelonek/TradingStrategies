@@ -22,9 +22,9 @@ abstract class TradingStrategy
 
     protected int $numberOfLongPositions = 0;
     protected int $numberOfShortPositions = 0;
-    protected int $numberOfStopLossOrders = 0;
+    protected int $numberOfStopsOrders = 0;
 
-    protected ?float $stopLossLimit = 50.0;
+    protected ?float $stopLimit = 50.0;
     protected float $rec = -1111.0;
 
     protected array $longPositionsPivotPoints = [];
