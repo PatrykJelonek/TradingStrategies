@@ -1,7 +1,7 @@
 %stuckey s.125(Joe Krutsinger) A.Wilinski (C)2018
 
 %v1 koncepcja
-%v2 dok³adnie wg Stuckey r=0.5 
+%v2 dokï¿½adnie wg Stuckey r=0.5
 %v3 SL
 
 clear all
@@ -27,31 +27,31 @@ for i=beg:m(1)-1
     zl(i)=0;
     zs(i)=0;
     range(i)=C(i-1,3)-C(i-1,4);
-    %if i>beg+100
-        Rang(i)=mean(range(i-5:i));  
+    //%if i>beg+100
+    Rang(i)=mean(range(i-5:i));
+
     stop1(i)=C(i,2)+r*Rang(i);
-    
     if C(i,3)>stop1(i)
         ld=ld+1;
         zl(i)=C(i,5)-stop1(i)-spread;
-       
     end
     if zl(i)<-SL
-           zl(i)=-SL-spread;
-            sl=sl+1;
+        zl(i)=-SL-spread;
+        sl=sl+1;
     end
+
     stop2(i)=C(i,2)-r*Rang(i);
     if C(i,4)<stop2(i)
         ls=ls+1;
         zs(i)=stop2(i)-C(i,5)-spread;
     end
-        if zs(i)<-SL
-           zs(i)=-SL-spread;
-           sl=sl+1;
-        end
- end
-   
-    
+    if zs(i)<-SL
+        zs(i)=-SL-spread;
+        sl=sl+1;
+    end
+end
+
+
 
 
 zsl=cumsum(zl);
@@ -64,7 +64,6 @@ if zcum(end)>rec
     zr=zcum;
     zlr=zsl;
     zsr=zss;
-    
 end
 
 
@@ -102,5 +101,3 @@ plot(x,zsr(mm(2)-mx(2)+1:mm(2)),'-r')
 hold on
 %plot(zr)
 plot(x,zr(mm(2)-mx(2)+1:mm(2)),'-b')
-
-

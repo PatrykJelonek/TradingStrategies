@@ -1,6 +1,6 @@
 <?php
 
-namespace TradingStrategies\Tests\Strategies\Seidenberg;
+namespace TradingStrategies\Exceptions\Tests\Strategies\Seidenberg;
 
 class SeidenbergStrategyTest
 {

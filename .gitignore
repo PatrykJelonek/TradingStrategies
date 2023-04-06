@@ -1,3 +1,7 @@
 .docker
 vendor
 ./src/index.php
+BASIC_COMMAND.md
+./src/Data
+./src/Pseudocod
+./src/GetStrategyResult.php

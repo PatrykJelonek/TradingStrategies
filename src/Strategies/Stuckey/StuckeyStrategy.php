@@ -2,33 +2,117 @@
 
 namespace TradingStrategies\Strategies\Stuckey;
 
-use TradingStrategies\Structures\Item;
+use JetBrains\PhpStorm\Pure;
+use TradingStrategies\Strategies\TradingStrategy;
+use TradingStrategies\Structures\Candlestick;
+use TradingStrategies\Structures\MarketAnalysisResult;
 
-class StuckeyStrategy
+class StuckeyStrategy extends TradingStrategy
 {
-    private const DEFAULT_FACTOR = 0.5;
-    private const DEFAULT_ITERATION_OFFSET = 3900;
-    private const DEFAULT_SPREAD = 1;
+    public const ORIGINAL_STUCKEY_FACTOR = 0.5;
 
-    private array $data = [];
-    private int $dataSize = 0;
-    private float $factor = self::DEFAULT_FACTOR;
-    private float $iterationOffset = self::DEFAULT_ITERATION_OFFSET;
-    private float $spread = self::DEFAULT_SPREAD;
+    protected float $stuckeyFactor = self::ORIGINAL_STUCKEY_FACTOR;
+    protected float $rec = -1111;
+    protected ?float $stopLimit = 50;
 
-    /**
-     * @param Item[] $data
-     */
-    public function __construct(
-        array $data,
-        float $factor = self::DEFAULT_FACTOR,
-        float $iterationOffset = self::DEFAULT_ITERATION_OFFSET,
-        float $spread = self::DEFAULT_SPREAD
-    ) {
-        $this->data = $data;
-        $this->factor = $factor;
-        $this->iterationOffset = $iterationOffset;
-        $this->spread = $spread;
-        $this->dataSize = count($data);
+    public function analyzeMarketByStrategy(): MarketAnalysisResult
+    {
+        $marketAnalysisResult = new MarketAnalysisResult();
+        $this->numberOfIteration = 0;
+
+        $highLowDifferencesByIteration = [];
+        $meanOfHighLowDifferencesByIteration = [];
+
+        for ($i = $this->calculationConfig->getOffset(); $i < $this->marketData->getSize(); $i++) {
+            $this->numberOfIteration++;
+
+            $this->longPositionsProfits[$i] = 0;
+            $this->shortPositionsProfits[$i] = 0;
+
+            $currentCandlestick = $this->marketData->getData()[$i];
+            $highLowDifferencesByIteration[$i] = $this->marketData->getData()[$i - 1]->getHighLowDifference();
+
+            if ($this->calculationConfig->isBufferReached($i)) {
+                $meanOfHighLowDifferencesByIteration[$i] = $this->mean(
+                    array_slice($highLowDifferencesByIteration, -6, 6)
+                );
+
+                $this->longPositionsPivotPoints[$i] = $this->getLongPositionPivotPoint(
+                    $currentCandlestick,
+                    $meanOfHighLowDifferencesByIteration[$i]
+                );
+
+                if ($currentCandlestick->getHigh() > $this->longPositionsPivotPoints[$i]) {
+                    $this->numberOfLongPositions++;
+                    $this->longPositionsProfits[$i] = $this->getLongPositionProfit(
+                        $currentCandlestick,
+                        $this->longPositionsPivotPoints[$i]
+                    );
+                }
+
+                if (isset($this->longPositionsProfits[$i]) && $this->longPositionsProfits[$i] < -$this->stopLimit) {
+                    $this->longPositionsProfits[$i] = -$this->stopLimit - $this->exchangeConfig->getSpread();
+                    $this->numberOfStopsOrders++;
+                }
+
+                $this->shortPositionsPivotPoints[$i] = $this->getShortPositionPivotPoint(
+                    $currentCandlestick,
+                    $meanOfHighLowDifferencesByIteration[$i]
+                );
+
+                if ($currentCandlestick->getLow() < $this->shortPositionsPivotPoints[$i]) {
+                    $this->numberOfShortPositions++;
+                    $this->shortPositionsProfits[$i] = $this->getShortPositionProfit(
+                        $currentCandlestick,
+                        $this->shortPositionsPivotPoints[$i]
+                    );
+                }
+
+                if (isset($this->shortPositionsProfits[$i]) && $this->shortPositionsProfits[$i] < -$this->stopLimit) {
+                    $this->shortPositionsProfits[$i] = -$this->stopLimit - $this->exchangeConfig->getSpread();
+                    $this->numberOfStopsOrders++;
+                }
+            }
+        }
+
+        $marketAnalysisResult
+            ->setFactor($this->stuckeyFactor)
+            ->setNumberOfIterations($this->numberOfIteration)
+            ->setNumberOfLongPositions($this->numberOfLongPositions)
+            ->setNumberOfShortPositions($this->numberOfShortPositions)
+            ->setNumberOfStopLossOrders($this->numberOfStopsOrders);
+
+        return $marketAnalysisResult;
+    }
+
+    #[Pure] private function getLongPositionPivotPoint(Candlestick $candlestick, float $highLowDifferencesMean): float
+    {
+        return $candlestick->getOpen() + $this->stuckeyFactor * $highLowDifferencesMean;
+    }
+
+    #[Pure] private function getLongPositionProfit(Candlestick $candlestick, float $pivotPoint): float
+    {
+        return $candlestick->getClose() - $pivotPoint - $this->exchangeConfig->getSpread();
+    }
+
+    #[Pure] private function getShortPositionPivotPoint(Candlestick $candlestick, float $highLowDifferencesMean): float
+    {
+        return $candlestick->getOpen() - $this->stuckeyFactor * $highLowDifferencesMean;
+    }
+
+    #[Pure] private function getShortPositionProfit(Candlestick $candlestick, float $pivotPoint): float
+    {
+        return $pivotPoint - $candlestick->getClose() - $this->exchangeConfig->getSpread();
+    }
+
+    public function getStuckeyFactor(): float
+    {
+        return $this->stuckeyFactor;
+    }
+
+    public function setStuckeyFactor(float $stuckeyFactor): StuckeyStrategy
+    {
+        $this->stuckeyFactor = $stuckeyFactor;
+        return $this;
     }
 }

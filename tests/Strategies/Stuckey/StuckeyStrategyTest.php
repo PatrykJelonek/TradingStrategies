@@ -1,6 +1,6 @@
 <?php
 
-namespace TradingStrategies\Tests\Strategies\Stuckey;
+namespace TradingStrategies\Exceptions\Tests\Strategies\Stuckey;
 
 use PHPUnit\Framework\TestCase;
 
