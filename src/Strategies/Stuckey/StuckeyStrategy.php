@@ -11,7 +11,6 @@ class StuckeyStrategy extends TradingStrategy
 {
     public const ORIGINAL_STUCKEY_FACTOR = 0.5;
 
-    protected float $stuckeyFactor = self::ORIGINAL_STUCKEY_FACTOR;
     protected float $rec = -1111;
     protected ?float $stopLimit = 50;
 
@@ -76,7 +75,7 @@ class StuckeyStrategy extends TradingStrategy
         }
 
         $marketAnalysisResult
-            ->setFactor($this->stuckeyFactor)
+            ->setFactor($this->factor)
             ->setNumberOfIterations($this->numberOfIteration)
             ->setNumberOfLongPositions($this->numberOfLongPositions)
             ->setNumberOfShortPositions($this->numberOfShortPositions)
@@ -87,7 +86,7 @@ class StuckeyStrategy extends TradingStrategy
 
     #[Pure] private function getLongPositionPivotPoint(Candlestick $candlestick, float $highLowDifferencesMean): float
     {
-        return $candlestick->getOpen() + $this->stuckeyFactor * $highLowDifferencesMean;
+        return $candlestick->getOpen() + $this->factor * $highLowDifferencesMean;
     }
 
     #[Pure] private function getLongPositionProfit(Candlestick $candlestick, float $pivotPoint): float
@@ -97,22 +96,11 @@ class StuckeyStrategy extends TradingStrategy
 
     #[Pure] private function getShortPositionPivotPoint(Candlestick $candlestick, float $highLowDifferencesMean): float
     {
-        return $candlestick->getOpen() - $this->stuckeyFactor * $highLowDifferencesMean;
+        return $candlestick->getOpen() - $this->factor * $highLowDifferencesMean;
     }
 
     #[Pure] private function getShortPositionProfit(Candlestick $candlestick, float $pivotPoint): float
     {
         return $pivotPoint - $candlestick->getClose() - $this->exchangeConfig->getSpread();
-    }
-
-    public function getStuckeyFactor(): float
-    {
-        return $this->stuckeyFactor;
-    }
-
-    public function setStuckeyFactor(float $stuckeyFactor): StuckeyStrategy
-    {
-        $this->stuckeyFactor = $stuckeyFactor;
-        return $this;
     }
 }
