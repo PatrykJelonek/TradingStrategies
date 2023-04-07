@@ -12,7 +12,6 @@ class SeidenbergStrategy extends TradingStrategy
     public const ORIGINAL_SEIDENBERG_FACTOR = 0.68;
 
     protected int $numberOfOpeningBelowYesterdayStop = 0;
-    protected float $seidenbergFactor = self::ORIGINAL_SEIDENBERG_FACTOR;
     protected float $rec = -111111;
     protected ?float $stopLimit = 16.0;
 
@@ -91,7 +90,7 @@ class SeidenbergStrategy extends TradingStrategy
         }
 
         $marketAnalysisResult
-            ->setFactor($this->seidenbergFactor)
+            ->setFactor($this->factor)
             ->setNumberOfIterations($this->numberOfIteration)
             ->setNumberOfLongPositions($this->numberOfLongPositions)
             ->setNumberOfShortPositions($this->numberOfShortPositions)
@@ -103,7 +102,7 @@ class SeidenbergStrategy extends TradingStrategy
 
     #[Pure] private function getLongPositionPivotPoint(Candlestick $candlestick, float $highLowDifferences): float
     {
-        return $candlestick->getHigh() + $this->seidenbergFactor * $highLowDifferences;
+        return $candlestick->getHigh() + $this->factor * $highLowDifferences;
     }
 
     #[Pure] private function getLongPositionProfit(Candlestick $candlestick, float $pivotPoint): float
@@ -113,7 +112,7 @@ class SeidenbergStrategy extends TradingStrategy
 
     #[Pure] private function getShortPositionPivotPoint(Candlestick $candlestick, float $highLowDifferences): float
     {
-        return $candlestick->getLow() - $this->seidenbergFactor * $highLowDifferences;
+        return $candlestick->getLow() - $this->factor * $highLowDifferences;
     }
 
     #[Pure] private function getShortPositionProfit(Candlestick $candlestick, float $pivotPoint): float

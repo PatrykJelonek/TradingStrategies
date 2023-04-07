@@ -26,6 +26,7 @@ abstract class TradingStrategy
 
     protected ?float $stopLimit = 50.0;
     protected float $rec = -1111.0;
+    protected float $factor = 0.5;
 
     protected array $longPositionsPivotPoints = [];
     protected array $shortPositionsPivotPoints = [];
@@ -99,5 +100,27 @@ abstract class TradingStrategy
         }
 
         return end($cumulativeLongAndShortPositionsProfits) / $theBiggestProfit;
+    }
+
+    public function getFactor(): float
+    {
+        return $this->factor;
+    }
+
+    public function setFactor(float $factor): TradingStrategy
+    {
+        $this->factor = $factor;
+        return $this;
+    }
+
+    public function getStopLimit(): ?float
+    {
+        return $this->stopLimit;
+    }
+
+    public function setStopLimit(?float $stopLimit): TradingStrategy
+    {
+        $this->stopLimit = $stopLimit;
+        return $this;
     }
 }
