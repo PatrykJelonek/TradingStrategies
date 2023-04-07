@@ -48,10 +48,7 @@ class SeidenbergStrategy extends TradingStrategy
 
             if ($currentCandlestick->getOpen() > $this->longPositionsPivotPoints[$i]) {
                 $this->numberOfOpeningBelowYesterdayStop++;
-                $this->longPositionsProfits[$i] = $this->getLongPositionProfit(
-                    $currentCandlestick,
-                    $currentCandlestick->getOpen()
-                );
+                $this->longPositionsProfits[$i] = $this->getLongPositionProfitWithoutPivotPoint($currentCandlestick);
 
                 if (($currentCandlestick->getOpen() - $currentCandlestick->getLow()) > $this->stopLimit) {
                     $this->numberOfStopsOrders++;
@@ -77,10 +74,7 @@ class SeidenbergStrategy extends TradingStrategy
 
             if ($currentCandlestick->getOpen() < $this->shortPositionsPivotPoints[$i]) {
                 $this->numberOfOpeningBelowYesterdayStop++;
-                $this->shortPositionsProfits[$i] = $this->getShortPositionProfit(
-                    $currentCandlestick,
-                    $currentCandlestick->getOpen()
-                );
+                $this->shortPositionsProfits[$i] = $this->getShortPositionProfitWithoutPivotPoint($currentCandlestick);
 
                 if (($currentCandlestick->getHigh() - $currentCandlestick->getOpen()) > $this->stopLimit) {
                     $this->numberOfStopsOrders++;
@@ -110,6 +104,11 @@ class SeidenbergStrategy extends TradingStrategy
         return $candlestick->getClose() - $pivotPoint - $this->exchangeConfig->getSpread();
     }
 
+    #[Pure] private function getLongPositionProfitWithoutPivotPoint(Candlestick $candlestick): float
+    {
+        return $candlestick->getClose() - $candlestick->getOpen() - $this->exchangeConfig->getSpread();
+    }
+
     #[Pure] private function getShortPositionPivotPoint(Candlestick $candlestick, float $highLowDifferences): float
     {
         return $candlestick->getLow() - $this->factor * $highLowDifferences;
@@ -118,5 +117,10 @@ class SeidenbergStrategy extends TradingStrategy
     #[Pure] private function getShortPositionProfit(Candlestick $candlestick, float $pivotPoint): float
     {
         return $pivotPoint - $candlestick->getClose() - $this->exchangeConfig->getSpread();
+    }
+
+    #[Pure] private function getShortPositionProfitWithoutPivotPoint(Candlestick $candlestick): float
+    {
+        return $candlestick->getOpen() - $candlestick->getClose() - $this->exchangeConfig->getSpread();
     }
 }
