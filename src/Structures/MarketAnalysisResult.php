@@ -10,6 +10,10 @@ class MarketAnalysisResult
     private int $numberOfShortPositions = 0;
     private ?int $numberOfOpeningBelowYesterdayStop = null;
     private int $numberOfStopLossOrders = 0;
+    private int $biggestLongPositionProfit = 0;
+    private int $biggestShortPositionProfit = 0;
+    private int $biggestLongPositionLoss = 0;
+    private int $biggestShortPositionLoss = 0;
 
     public function getFactor(): ?float
     {
@@ -74,6 +78,50 @@ class MarketAnalysisResult
     public function setNumberOfStopLossOrders(int $numberOfStopLossOrders): MarketAnalysisResult
     {
         $this->numberOfStopLossOrders = $numberOfStopLossOrders;
+        return $this;
+    }
+
+    public function getBiggestLongPositionProfit(): int
+    {
+        return $this->biggestLongPositionProfit;
+    }
+
+    public function setBiggestLongPositionProfit(int $biggestLongPositionProfit): MarketAnalysisResult
+    {
+        $this->biggestLongPositionProfit = $biggestLongPositionProfit;
+        return $this;
+    }
+
+    public function getBiggestShortPositionProfit(): int
+    {
+        return $this->biggestShortPositionProfit;
+    }
+
+    public function setBiggestShortPositionProfit(int $biggestShortPositionProfit): MarketAnalysisResult
+    {
+        $this->biggestShortPositionProfit = $biggestShortPositionProfit;
+        return $this;
+    }
+
+    public function getBiggestLongPositionLoss(): int
+    {
+        return $this->biggestLongPositionLoss;
+    }
+
+    public function setBiggestLongPositionLoss(int $biggestLongPositionLoss): MarketAnalysisResult
+    {
+        $this->biggestLongPositionLoss = $biggestLongPositionLoss;
+        return $this;
+    }
+
+    public function getBiggestShortPositionLoss(): int
+    {
+        return $this->biggestShortPositionLoss;
+    }
+
+    public function setBiggestShortPositionLoss(int $biggestShortPositionLoss): MarketAnalysisResult
+    {
+        $this->biggestShortPositionLoss = $biggestShortPositionLoss;
         return $this;
     }
 

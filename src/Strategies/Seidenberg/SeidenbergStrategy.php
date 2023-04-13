@@ -18,6 +18,10 @@ class SeidenbergStrategy extends TradingStrategy
     public function analyzeMarketByStrategy(): MarketAnalysisResult
     {
         $marketAnalysisResult = new MarketAnalysisResult();
+        $biggestLongPositionProfit = 0;
+        $biggestShortPositionProfit = 0;
+        $biggestLongPositionLoss = 0;
+        $biggestShortPositionLoss = 0;
 
         for ($i = $this->calculationConfig->getOffset(); $i < $this->marketData->getSize() - 1; $i++) {
             $this->numberOfIteration++;
@@ -81,6 +85,22 @@ class SeidenbergStrategy extends TradingStrategy
                     $this->shortPositionsProfits[$i] = -$this->stopLimit - $this->exchangeConfig->getSpread();
                 }
             }
+
+            if (!empty($this->longPositionsProfits[$i]) && $this->longPositionsProfits[$i] > $biggestLongPositionProfit) {
+                $biggestLongPositionProfit = $this->longPositionsProfits[$i];
+            }
+
+            if (!empty($this->shortPositionsProfits[$i]) && $this->shortPositionsProfits[$i] > $biggestShortPositionProfit) {
+                $biggestShortPositionProfit = $this->shortPositionsProfits[$i];
+            }
+
+            if (!empty($this->longPositionsProfits[$i]) && $this->longPositionsProfits[$i] < $biggestLongPositionLoss) {
+                $biggestLongPositionLoss = $this->longPositionsProfits[$i];
+            }
+
+            if (!empty($this->shortPositionsProfits[$i]) && $this->shortPositionsProfits[$i] < $biggestShortPositionLoss) {
+                $biggestShortPositionLoss = $this->shortPositionsProfits[$i];
+            }
         }
 
         $marketAnalysisResult
@@ -89,7 +109,11 @@ class SeidenbergStrategy extends TradingStrategy
             ->setNumberOfLongPositions($this->numberOfLongPositions)
             ->setNumberOfShortPositions($this->numberOfShortPositions)
             ->setNumberOfStopLossOrders($this->numberOfStopsOrders)
-            ->setNumberOfOpeningBelowYesterdayStop($this->numberOfOpeningBelowYesterdayStop);
+            ->setNumberOfOpeningBelowYesterdayStop($this->numberOfOpeningBelowYesterdayStop)
+            ->setBiggestLongPositionProfit($biggestLongPositionProfit)
+            ->setBiggestLongPositionLoss($biggestLongPositionLoss)
+            ->setBiggestShortPositionProfit($biggestShortPositionProfit)
+            ->setBiggestShortPositionLoss($biggestShortPositionLoss);
 
         return $marketAnalysisResult;
     }

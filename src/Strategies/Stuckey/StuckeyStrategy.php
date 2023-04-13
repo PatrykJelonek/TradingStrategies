@@ -22,6 +22,11 @@ class StuckeyStrategy extends TradingStrategy
         $highLowDifferencesByIteration = [];
         $meanOfHighLowDifferencesByIteration = [];
 
+        $biggestLongPositionProfit = 0;
+        $biggestShortPositionProfit = 0;
+        $biggestLongPositionLoss = 0;
+        $biggestShortPositionLoss = 0;
+
         for ($i = $this->calculationConfig->getOffset(); $i < $this->marketData->getSize(); $i++) {
             $this->numberOfIteration++;
 
@@ -71,6 +76,22 @@ class StuckeyStrategy extends TradingStrategy
                     $this->shortPositionsProfits[$i] = -$this->stopLimit - $this->exchangeConfig->getSpread();
                     $this->numberOfStopsOrders++;
                 }
+
+                if (!empty($this->longPositionsProfits[$i]) && $this->longPositionsProfits[$i] > $biggestLongPositionProfit) {
+                    $biggestLongPositionProfit = $this->longPositionsProfits[$i];
+                }
+
+                if (!empty($this->shortPositionsProfits[$i]) && $this->shortPositionsProfits[$i] > $biggestShortPositionProfit) {
+                    $biggestShortPositionProfit = $this->shortPositionsProfits[$i];
+                }
+
+                if (!empty($this->longPositionsProfits[$i]) && $this->longPositionsProfits[$i] < $biggestLongPositionLoss) {
+                    $biggestLongPositionLoss = $this->longPositionsProfits[$i];
+                }
+
+                if (!empty($this->shortPositionsProfits[$i]) && $this->shortPositionsProfits[$i] < $biggestShortPositionLoss) {
+                    $biggestShortPositionLoss = $this->shortPositionsProfits[$i];
+                }
             }
         }
 
@@ -79,7 +100,11 @@ class StuckeyStrategy extends TradingStrategy
             ->setNumberOfIterations($this->numberOfIteration)
             ->setNumberOfLongPositions($this->numberOfLongPositions)
             ->setNumberOfShortPositions($this->numberOfShortPositions)
-            ->setNumberOfStopLossOrders($this->numberOfStopsOrders);
+            ->setNumberOfStopLossOrders($this->numberOfStopsOrders)
+            ->setBiggestLongPositionProfit($biggestLongPositionProfit)
+            ->setBiggestLongPositionLoss($biggestLongPositionLoss)
+            ->setBiggestShortPositionProfit($biggestShortPositionProfit)
+            ->setBiggestShortPositionLoss($biggestShortPositionLoss);
 
         return $marketAnalysisResult;
     }
